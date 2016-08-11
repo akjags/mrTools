@@ -265,6 +265,16 @@ if ~isfield(fitParams,'initParams')
     fitParams.minParams = [fitParams.stimExtents(1) fitParams.stimExtents(2) 0];
     fitParams.maxParams = [fitParams.stimExtents(3) fitParams.stimExtents(4) inf];
     fitParams.initParams = [0 0 4];
+   case 'gaussian-exp'
+    % parameter names/descriptions and other information for allowing user to set them
+    fitParams.paramNames = {'x', 'y', 'rfWidth', 'n'};
+    fitParams.paramDescriptions = {'RF x position', 'RF y position', 'RF width (std of gaussian)', 'Exponent non-linearity'};
+    fitParams.paramIncDec = [1 1 1 1]; % What is this?? %%%%
+    fitParams.paramMin = [-inf -inf 0 0];
+    fitParams.paramMax = [inf inf inf inf];
+    fitParams.minParams = [fitParams.stimExtents(1) fitParams.stimExtents(2) 0 0];
+    fitParams.maxParams = [fitParams.stimExtents(3) fitParams.stimExtents(4) inf inf];
+    fitParams.initParams = [0 0 4 1]; %% Initialize exponent n to 1, acting as a linear summation.
    case 'gaussian-hdr'
     % parameter names/descriptions and other information for allowing user to set them
     fitParams.paramNames = {'x','y','rfWidth','timelag','tau'};
