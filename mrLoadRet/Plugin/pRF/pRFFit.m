@@ -267,7 +267,7 @@ if ~isfield(fitParams,'initParams')
     fitParams.initParams = [0 0 4];
    case 'gaussian-exp'
     % parameter names/descriptions and other information for allowing user to set them
-    fitParams.paramNames = {'x', 'y', 'rfWidth', 'n'};
+    fitParams.paramNames = {'x', 'y', 'rfWidth', 'exp'};
     fitParams.paramDescriptions = {'RF x position', 'RF y position', 'RF width (std of gaussian)', 'Exponent non-linearity'};
     fitParams.paramIncDec = [1 1 1 1]; % What is this?? %%%%
     fitParams.paramMin = [-inf -inf 0 0];
@@ -384,6 +384,11 @@ for i = 1:fitParams.concatInfo.n
   % get model response
   nFrames = fitParams.concatInfo.runTransition(i,2);
   thisModelResponse = convolveModelWithStimulus(rfModel,fitParams.stim{i},nFrames);
+  
+  % FOR GAUSSIAN-EXP ONLY: include exponent non-linearity
+  if strcmp(fitParams.rfType, 'gaussian-exp')
+    thisModelResponse = power(thisModelResponse, p.exp);
+  end
 
   % get a model hrf
   hrf = getCanonicalHRF(p.canonical,fitParams.framePeriod);
@@ -530,6 +535,24 @@ switch (fitParams.rfType)
     p.canonical.tau2 = fitParams.tau2;
     p.canonical.exponent2 = fitParams.exponent2;
     p.canonical.offset2 = 0;
+  case 'gaussian-exp'
+    p.x = params(1);
+    p.y = params(2);
+    p.std = params(3);
+    p.exp = params(4);
+    % use a fixed single gaussian
+    p.canonical.type = 'gamma';
+    p.canonical.lengthInSeconds = 25;
+    p.canonical.timelag = fitParams.timelag;
+    p.canonical.tau = fitParams.tau;
+    p.canonical.exponent = fitParams.exponent;
+    p.canonical.offset = 0;
+    p.canonical.diffOfGamma = fitParams.diffOfGamma;
+    p.canonical.amplitudeRatio = fitParams.amplitudeRatio;
+    p.canonical.timelag2 = fitParams.timelag2;
+    p.canonical.tau = fitParams.tau2;
+    p.canonical.exponent2 = fitParams.exponent2;
+    p.canonical.offset2 = 0;
   case 'gaussian-hdr'
     p.x = params(1);
     p.y = params(2);
@@ -628,8 +651,8 @@ function rfModel = getRFModel(params,fitParams)
 
 rfModel = [];
 
-% now gernerate the rfModel
-if any(strcmp(fitParams.rfType,{'gaussian','gaussian-hdr'}))
+% now generate the rfModel
+if any(strcmp(fitParams.rfType,{'gaussian','gaussian-exp','gaussian-hdr'}))
   rfModel = makeRFGaussian(params,fitParams);
 else
   disp(sprintf('(pRFFit:getRFModel) Unknown rfType: %s',fitParams.rfType));
